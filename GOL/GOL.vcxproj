@@ -133,6 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,16 +147,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileIO.cpp" />
-    <ClCompile Include="FileIO2.cpp" />
     <ClCompile Include="GameOfLife.cpp" />
-    <ClCompile Include="GameOfLife2.cpp" />
     <ClCompile Include="GOL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileIO.h" />
-    <ClInclude Include="FileIO2.h" />
     <ClInclude Include="GameOfLife.h" />
-    <ClInclude Include="GameOfLife2.h" />
+    <ClInclude Include="Life.h" />
     <ClInclude Include="Modulo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

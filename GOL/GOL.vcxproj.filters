@@ -21,33 +21,24 @@
     <ClCompile Include="GOL.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="GameOfLife.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="FileIO.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="GameOfLife2.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIO2.cpp">
+    <ClCompile Include="GameOfLife.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameOfLife.h">
+    <ClInclude Include="Modulo.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Life.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="FileIO.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Modulo.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="GameOfLife2.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="FileIO2.h">
+    <ClInclude Include="GameOfLife.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

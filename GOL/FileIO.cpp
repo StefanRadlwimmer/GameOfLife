@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-bool** FileIO::Load(char* in_file, int& sizeX, int& sizeY)
+Life* FileIO::Load(char* in_file, int& sizeX, int& sizeY)
 {
 	std::ifstream infile(in_file);
 
@@ -17,16 +17,15 @@ bool** FileIO::Load(char* in_file, int& sizeX, int& sizeY)
 	std::getline(ss, item, ',');
 	sizeY = atoi(item.c_str());
 
-	bool** life = new bool*[sizeY];
+	Life* life = new Life[sizeY * sizeX];
 
 	for (int y = 0; y < sizeY; ++y)
 	{
-		life[y] = new bool[sizeX];
 		std::getline(infile, line);
 		const char* cline = line.c_str();
 		for (int x = 0; x < sizeX; x++)
 		{
-			life[y][x] = (cline[x] == 'x');
+			life[y *sizeX + x] = (cline[x] == 'x');
 		}
 	}
 	infile.close();
@@ -34,7 +33,7 @@ bool** FileIO::Load(char* in_file, int& sizeX, int& sizeY)
 	return life;
 }
 
-void FileIO::Save(char* out_file, bool** life, int sizeX, int sizeY)
+void FileIO::Save(char* out_file, Life* life, int sizeX, int sizeY)
 {
 	std::ofstream outfile(out_file);
 	outfile << sizeX << "," << sizeY << std::endl;
@@ -42,7 +41,7 @@ void FileIO::Save(char* out_file, bool** life, int sizeX, int sizeY)
 	{
 		for (int x = 0; x < sizeX; x++)
 		{
-			if (life[y][x])
+			if (life[y *sizeX + x])
 				outfile << 'x';
 			else
 				outfile << '.';

@@ -1,23 +1,23 @@
 #pragma once
 
-typedef char byte;
+typedef bool Life;
 
 class GameOfLife
 {
 public:
-	GameOfLife(bool** life, int sizeX, int sizeY);
+	GameOfLife(Life* life, int sizeX, int sizeY);
 	~GameOfLife();
 
-	bool** Simulate(int generations);
-
+	Life* Simulate(int generations, char* mode);
+	void CheckField(int ym1Offset, int yOffset, int yp1Offset, int xm1, int x, int xp1) const;
+	void CheckLine(int y) const;
 private:
-	void Simulate();
-	void Count(int y, int x);
-	void CheckLife(int y, int x);
-	
+	void Simulate(char* mode) const;
+	void SwapBuffers();
+
 	int m_sizeY;
 	int m_sizeX;
-	bool** m_life;
-	byte** m_counter;
+	Life* m_life;
+	Life* m_buffer;
 };
 
