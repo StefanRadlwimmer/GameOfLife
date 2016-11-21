@@ -1,6 +1,6 @@
 __kernel void CheckLife(
-	__global const int* life,
-	__global int* buffer,
+	__global const char* life,
+	__global char* buffer,
 	const int sizeY,
 	const int sizeX
 )

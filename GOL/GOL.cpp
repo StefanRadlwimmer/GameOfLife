@@ -71,6 +71,7 @@ int main(int argc, char* argv[])
 
 	if (mode == OpenMP && numTreads != -1)
 		omp_set_num_threads(numTreads);
+
 	if (mode == OpenCL)
 	{
 		device = Global::ParseDevice(deviceString);

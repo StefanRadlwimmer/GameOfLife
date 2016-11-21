@@ -2,8 +2,6 @@
 #ifdef _DEBUG
 #define __CL_ENABLE_EXCEPTIONS
 #endif
-#include "CL/cl.h"
-#include <CL/cl.hpp>
 
 enum DeviceType
 {
@@ -18,7 +16,7 @@ enum Mode
 	OpenCL
 };
 
-typedef int Life;
+typedef char Life;
 
 class Global
 {
