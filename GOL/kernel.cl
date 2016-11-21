@@ -8,6 +8,9 @@ __kernel void CheckLife(
 	int y = get_global_id(0);
 	int x = get_global_id(1);
 
+	if (y >= sizeY || x >= sizeX)
+		return;
+
 	int ym1Offset, yOffset, yp1Offset, xm1, xp1;
 
 	yOffset = y * sizeX;

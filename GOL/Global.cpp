@@ -95,16 +95,12 @@ void Global::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2, cl::
 	int dim1Binary = pow(2, ceil(log(dim1) / log(2)));
 	int dim2Binary = pow(2, ceil(log(dim2) / log(2)));
 
+	global = cl::NDRange(dim1Binary, dim2Binary);
+
 	cl_int err = CL_SUCCESS;
 	size_t maxWorkGroupSize = 0;
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 	CheckClError(err, __FILE__, __LINE__);
 
-	cl_uint maxWorkItemDimensions = 0;
-	err = device.getInfo(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, &maxWorkItemDimensions);
-	CheckClError(err, __FILE__, __LINE__);
-
-	size_t* workItemSizes = new size_t[maxWorkItemDimensions];
-	err = device.getInfo(CL_DEVICE_MAX_WORK_ITEM_SIZES, workItemSizes);
-	CheckClError(err, __FILE__, __LINE__);
+	local = cl::NDRange(1, maxWorkGroupSize);
 }

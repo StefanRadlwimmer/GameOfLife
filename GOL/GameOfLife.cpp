@@ -168,6 +168,11 @@ void GameOfLife::SimulateOpenCL(int generations) const
 	size_t maxWorkGroupSize = 0;
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 
+	// Run the kernel on specific ND range
+	cl::NDRange global;
+	cl::NDRange local;
+	Global::DetermineBestWorkGroups(device, m_sizeY, m_sizeX, local, global);
+
 	//create kernels
 	cl::Kernel checkLife(program, "CheckLife", &err);
 	for (int g = 0; g < generations; ++g)
@@ -178,11 +183,7 @@ void GameOfLife::SimulateOpenCL(int generations) const
 		checkLife.setArg(3, m_sizeX);
 
 		// launch add kernel
-		// Run the kernel on specific ND range
-		cl::NDRange global(m_sizeY, m_sizeX);
-		cl::NDRange local(10, 10); //make sure local range is divisible by global range
-		cl::NDRange offset(0, 0);
-		err = queue.enqueueNDRangeKernel(checkLife, offset, global, local);
+		err = queue.enqueueNDRangeKernel(checkLife, cl::NullRange, global, local);
 		Global::CheckClError(err, __FILE__, __LINE__);
 
 		cl::Buffer* tmp = life;
