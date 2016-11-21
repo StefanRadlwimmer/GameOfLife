@@ -157,9 +157,6 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="GameOfLife.cpp" />
     <ClCompile Include="Global.cpp" />

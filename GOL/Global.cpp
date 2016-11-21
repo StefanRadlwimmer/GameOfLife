@@ -24,3 +24,11 @@ DeviceType Global::ParseDevice(char* device)
 	std::cout << "Unknown Device: " << device << std::endl;
 	return GPU;
 }
+
+char* Global::ParseDevice(DeviceType device)
+{
+	if (device == GPU)
+		return "GPU";
+
+	return "CPU";
+}

@@ -3,50 +3,38 @@
 #include <CL/cl.hpp>
 #include <algorithm>
 
-void OpenCLHelper::GetOpenCLSettings(DeviceType device, int& out_platformId, int& out_deviceId)
+void OpenCLHelper::GetOpenCLSettings(DeviceType deviceType, int& out_platformId, int& out_deviceId)
 {
 	cl_int err;
 
-	cl_uint numPlatforms;
-	cl_platform_id* platformIds;
-	cl_uint numDevices;
-	cl_device_id* deviceIds;
-
-	err = clGetPlatformIDs(0, nullptr, &numPlatforms);
-	CheckClError(err, __FILE__, __LINE__);
-	platformIds = (cl_platform_id*)alloca(sizeof(cl_platform_id)*numPlatforms);
-	err = clGetPlatformIDs(numPlatforms, platformIds, nullptr);
+	std::vector<cl::Platform> platforms;
+	err = cl::Platform::get(&platforms);
 	CheckClError(err, __FILE__, __LINE__);
 
-	for (int p = 0; p < numPlatforms; ++p)
+	for (out_platformId = 0; out_platformId < platforms.size(); ++out_platformId)
 	{
-		cl_platform_id platformId = platformIds[p];
+		cl::Platform& platform = platforms[out_platformId];
 
-		err = clGetDeviceIDs(platformId, CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
+		std::vector<cl::Device> devices;
+		err = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 		CheckClError(err, __FILE__, __LINE__);
-		deviceIds = (cl_device_id*)alloca(sizeof(cl_platform_id)*numDevices);
-		err = clGetDeviceIDs(platformId, CL_DEVICE_TYPE_ALL, numDevices, deviceIds, NULL);
-		CheckClError(err, __FILE__, __LINE__);
-
-		for (int d = 0; d < numDevices; ++d)
+		for (out_deviceId = 0; out_deviceId < platforms.size(); ++out_deviceId)
 		{
-			cl_device_id deviceId = deviceIds[d];
+			cl::Device& device = devices[out_deviceId];
 
 			cl_device_type type = 0;
-			err = clGetDeviceInfo(deviceId, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
+			err = device.getInfo(CL_DEVICE_TYPE, &type);
 			CheckClError(err, __FILE__, __LINE__);
 
-			if ((type == CL_DEVICE_TYPE_GPU && device == GPU)
-				|| (type == CL_DEVICE_TYPE_CPU && device == CPU))
+			if ((type == CL_DEVICE_TYPE_GPU && deviceType == GPU)
+				|| (type == CL_DEVICE_TYPE_CPU && deviceType == CPU))
 			{
-				out_platformId = p;
-				out_deviceId = d;
 				return;
 			}
 		}
 	}
 
-	std::cout << "Unknown Device: " << device << std::endl;
+	std::cout << "No device for type: " << Global::ParseDevice(deviceType) << " available!" << std::endl;
 }
 
 void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2, cl::NDRange& out_local, cl::NDRange& out_global)
@@ -61,8 +49,7 @@ void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 	CheckClError(err, __FILE__, __LINE__);
 
-	size_t workDistribution = 1;
-	workDistribution = std::max(workDistribution, maxWorkGroupSize / dim2Binary);
+	size_t workDistribution = std::max(1ULL, maxWorkGroupSize / dim2Binary);
 
 	out_local = cl::NDRange(workDistribution, maxWorkGroupSize / workDistribution);
 }
@@ -71,7 +58,6 @@ cl::Device OpenCLHelper::GetDevice(int platformId, int deviceId)
 {
 	cl_int err = CL_SUCCESS;
 
-	// get available platforms ( NVIDIA, Intel, AMD,...)
 	std::vector<cl::Platform> platforms;
 	err = cl::Platform::get(&platforms);
 	CheckClError(err, __FILE__, __LINE__);
@@ -81,28 +67,26 @@ cl::Device OpenCLHelper::GetDevice(int platformId, int deviceId)
 		exit(-1);
 	}
 
-	if (platforms.size() < platformId)
+	if (platforms.size() <= platformId)
 	{
-		std::cout << "No OpenCL platforms with Id " << platformId << " available!\n";
+		std::cout << "No OpenCL platform with Id " << platformId << " available!\n";
 		exit(-1);
 	}
 
-	// create a context and get available devices
-	cl::Platform platform = platforms[platformId]; // on a different machine, you may have to select a different platform
+	cl::Platform platform = platforms[platformId];
 
-													 // get available devices
 	std::vector<cl::Device> devices;
-	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+	err = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 	CheckClError(err, __FILE__, __LINE__);
 	if (devices.size() == 0)
 	{
-		std::cout << "No OpenCL device on platorm" << platformId << "available!\n";
+		std::cout << "No OpenCL devices on platorm " << platformId << " available!\n";
 		exit(-1);
 	}
 
-	if (devices.size() < deviceId)
+	if (devices.size() <= deviceId)
 	{
-		std::cout << "No OpenCL device with Id " << deviceId << " on platform" << platformId << " available!\n";
+		std::cout << "No OpenCL device with Id " << deviceId << " on platform " << platformId << " available!\n";
 		exit(-1);
 	}
 

@@ -13,13 +13,14 @@
 namespace cr = std::chrono;
 typedef cr::high_resolution_clock golClock;
 void WriteDuration(const cr::steady_clock::time_point& start, const cr::steady_clock::time_point& end);
+void WriteTime(const cr::steady_clock::time_point& start, const cr::steady_clock::time_point& end);
 
 int main(int argc, char* argv[])
 {
 	char* inFile = nullptr, *outFile = nullptr, *modeString = "seq", *deviceString = "gpu";
 	int generations = 0, numTreads = -1, platformId = -1, deviceId = -1;
-	bool measure = false;
-	DeviceType device;
+	bool measure = false, time = false;
+	DeviceType deviceType;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -34,6 +35,9 @@ int main(int argc, char* argv[])
 
 		if (strcmp(argv[i], "--measure") == 0)
 			measure = true;
+
+		if (strcmp(argv[i], "--time") == 0)
+			time = true;
 
 		if (strcmp(argv[i], "--mode") == 0)
 			modeString = argv[++i];
@@ -64,6 +68,7 @@ int main(int argc, char* argv[])
 
 	int sizeX, sizeY;
 	auto start_time = golClock::now();
+	auto start_time1 = golClock::now();
 	auto life = FileIO::Load(inFile, sizeX, sizeY);
 	auto gol = new GameOfLife(life, sizeX, sizeY);
 
@@ -74,16 +79,16 @@ int main(int argc, char* argv[])
 
 	if (mode == OpenCL)
 	{
-		device = Global::ParseDevice(deviceString);
+		deviceType = Global::ParseDevice(deviceString);
 
 		if (platformId == -1 || deviceId == -1)
-			OpenCLHelper::GetOpenCLSettings(device, platformId, deviceId);
+			OpenCLHelper::GetOpenCLSettings(deviceType, platformId, deviceId);
 
 		gol->SetCLSettings(platformId, deviceId);
 	}
 	
 	if (measure)
-		WriteDuration(start_time, golClock::now());
+		WriteDuration(start_time1, golClock::now());
 
 	if (sizeX == 0 && sizeY == 0)
 	{
@@ -94,17 +99,19 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	start_time = golClock::now();
+	auto start_time2 = golClock::now();
 	life = gol->Simulate(generations, mode);
 	if (measure)
-		WriteDuration(start_time, golClock::now());
+		WriteDuration(start_time2, golClock::now());
 
-	start_time = golClock::now();
+	auto start_time3 = golClock::now();
 	if (outFile != nullptr)
 		FileIO::Save(outFile, life, sizeX, sizeY);
 	delete gol;
 	if (measure)
-		WriteDuration(start_time, golClock::now());
+		WriteDuration(start_time3, golClock::now());
+	if (time)
+		WriteTime(start_time, golClock::now());
 
 #ifdef _DEBUG
 	std::cin.ignore();
@@ -133,3 +140,15 @@ void WriteDuration(const cr::steady_clock::time_point& start, const cr::steady_c
 		<< std::setw(3) << millis.count() << "; ";
 }
 
+void WriteTime(const cr::steady_clock::time_point& start, const cr::steady_clock::time_point& end)
+{
+	auto diff = end - start;
+	auto secs = cr::duration_cast<cr::seconds>(diff);
+	diff -= secs;
+
+	auto millis = cr::duration_cast<cr::milliseconds>(diff);
+
+	std::cout << std::setfill('0');
+	std::cout << std::setw(2) << secs.count() << '.'
+		<< std::setw(3) << millis.count() << "; ";
+}

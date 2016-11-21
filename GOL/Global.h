@@ -2,6 +2,7 @@
 #ifdef _DEBUG
 #define __CL_ENABLE_EXCEPTIONS
 #endif
+#include <CL/cl.h>
 
 enum DeviceType
 {
@@ -23,4 +24,5 @@ class Global
 public:
 	static Mode ParseMode(char* mode);
 	static DeviceType ParseDevice(char* device);
-	};
+	static char* ParseDevice(DeviceType device);
+};

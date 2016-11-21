@@ -10,25 +10,28 @@ public:
 	~GameOfLife();
 
 	Life* Simulate(int generations, Mode mode);
-	void SetCLSettings(int platformId, int deviceId);
-	void SetupOpenCL();
+#pragma region seq_omp
 private:
-	void CheckLine(int ym1, int y, int yp1) const;
-	void CheckField(int ym1Offset, int yOffset, int yp1Offset, int xm1, int x, int xp1) const;
-
 	void SimulateSeq(int generations);
 	void SimulateOpenMP(int generations);
-	void SimulateOpenCL(int generations);
+	void CheckLine(int ym1, int y, int yp1) const;
+	void CheckField(int ym1Offset, int yOffset, int yp1Offset, int xm1, int x, int xp1) const;
 	void SwapBuffers();
-	void SwapCLBuffers();
-
-	//Seq & OpenMP
+	
 	int m_sizeY;
 	int m_sizeX;
 	Life* m_life;
 	Life* m_buffer;
+#pragma endregion seq_omp
 
-	//OpenCL
+#pragma region ocl
+public:
+	void SetCLSettings(int platformId, int deviceId);
+private:
+	void SetupOpenCL();
+	void SimulateOpenCL(int generations);
+	void SwapCLBuffers();
+
 	cl::CommandQueue m_queue;
 	cl::Kernel m_kernel;
 	cl::Buffer* m_clLife;
@@ -36,5 +39,6 @@ private:
 	cl::Device m_device;
 	int m_platformId;
 	int m_deviceId;
+#pragma endregion ocl
 };
 
