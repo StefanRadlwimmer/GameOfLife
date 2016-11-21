@@ -18,7 +18,7 @@ void OpenCLHelper::GetOpenCLSettings(DeviceType deviceType, int& out_platformId,
 		std::vector<cl::Device> devices;
 		err = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 		CheckClError(err, __FILE__, __LINE__);
-		for (out_deviceId = 0; out_deviceId < platforms.size(); ++out_deviceId)
+		for (out_deviceId = 0; out_deviceId < devices.size(); ++out_deviceId)
 		{
 			cl::Device& device = devices[out_deviceId];
 

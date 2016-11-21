@@ -172,6 +172,9 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
     <ClInclude Include="OpenCLHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Batch\_Benchmark.bat" />
+    <None Include="Batch\_Test_All.bat" />
+    <None Include="Batch\_Time_All.bat" />
     <None Include="kernel.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{850e340b-e313-4bd3-b822-b69fcde648f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GOL.cpp">
@@ -48,6 +51,15 @@
   <ItemGroup>
     <None Include="kernel.cl">
       <Filter>Ressourcendateien</Filter>
+    </None>
+    <None Include="Batch\_Benchmark.bat">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="Batch\_Test_All.bat">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="Batch\_Time_All.bat">
+      <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
 </Project>
