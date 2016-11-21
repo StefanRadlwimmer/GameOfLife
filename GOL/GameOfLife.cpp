@@ -1,6 +1,7 @@
 #include "GameOfLife.h"
 #include <iostream>
 #include <fstream>
+#include "OpenCLHelper.h"
 
 GameOfLife::GameOfLife(Life* life, int sizeX, int sizeY) : m_sizeY(sizeY), m_sizeX(sizeX), m_life(life), m_buffer(new Life[sizeY * sizeX]), m_platformId(-1), m_deviceId(-1)
 {
@@ -84,30 +85,8 @@ void GameOfLife::SimulateOpenCL(int generations) const
 {
 	const std::string KERNEL_FILE = "kernel.cl";
 	cl_int err = CL_SUCCESS;
-
-	// get available platforms ( NVIDIA, Intel, AMD,...)
-	std::vector<cl::Platform> platforms;
-	err = cl::Platform::get(&platforms);
-	Global::CheckClError(err, __FILE__, __LINE__);
-	if (platforms.size() == 0) {
-		std::cout << "No OpenCL platforms available!\n";
-		exit(-1);
-	}
-
-	// create a context and get available devices
-	cl::Platform platform = platforms[m_platformId]; // on a different machine, you may have to select a different platform
-
-	// get available devices
-	std::vector<cl::Device> devices;
-	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-	Global::CheckClError(err, __FILE__, __LINE__);
-	if (devices.size() == 0) {
-		std::cout << "No OpenCL platforms available!\n";
-		exit(-1);
-	}
-
-	cl::Device device = devices[m_deviceId];
-
+	
+	cl::Device device = OpenCLHelper::GetDevice(m_platformId, m_deviceId);
 	cl::Context context(device);
 
 	// load and build the kernel
@@ -120,6 +99,8 @@ void GameOfLife::SimulateOpenCL(int generations) const
 	std::string sourceCode(std::istreambuf_iterator<char>(sourceFile), (std::istreambuf_iterator<char>()));
 	cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
 	cl::Program program = cl::Program(context, source);
+
+	std::vector<cl::Device> devices { device };
 #ifdef __CL_ENABLE_EXCEPTIONS
 	try
 	{
@@ -134,27 +115,22 @@ void GameOfLife::SimulateOpenCL(int generations) const
 		program.getBuildInfo(device, CL_PROGRAM_BUILD_OPTIONS, &s);
 		std::cout << s << std::endl;
 
-		std::cerr
-			<< "ERROR: "
-			<< error.what()
-			<< "("
-			<< error.err()
-			<< ")"
-			<< std::endl;
+		std::cerr << "ERROR: " << error.what() << "(" << error.err() << ")" << std::endl;
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 	}
 #else
 	err = program.build(devices);
 #endif
 	cl::CommandQueue queue(context, 0, &err);
-	Global::CheckClError(err, __FILE__, __LINE__);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 	//cl::CommandQueue queue(context, device, 0, &err);
 
 	// input buffers
 	cl::Buffer* life = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
-	Global::CheckClError(err, __FILE__, __LINE__);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 	// output buffers
 	cl::Buffer* buffer = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
-	Global::CheckClError(err, __FILE__, __LINE__);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 	// fill buffers
 	err = queue.enqueueWriteBuffer(
@@ -163,7 +139,7 @@ void GameOfLife::SimulateOpenCL(int generations) const
 		0, // offset
 		m_sizeX * m_sizeY * sizeof(Life), // size of write 
 		m_life); // pointer to input
-	Global::CheckClError(err, __FILE__, __LINE__);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 	size_t maxWorkGroupSize = 0;
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
@@ -171,20 +147,26 @@ void GameOfLife::SimulateOpenCL(int generations) const
 	// Run the kernel on specific ND range
 	cl::NDRange global;
 	cl::NDRange local;
-	Global::DetermineBestWorkGroups(device, m_sizeY, m_sizeX, local, global);
+	OpenCLHelper::DetermineBestWorkGroups(device, m_sizeY, m_sizeX, local, global);
 
 	//create kernels
 	cl::Kernel checkLife(program, "CheckLife", &err);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
+
 	for (int g = 0; g < generations; ++g)
 	{
-		checkLife.setArg(0, *life);
-		checkLife.setArg(1, *buffer);
-		checkLife.setArg(2, m_sizeY);
-		checkLife.setArg(3, m_sizeX);
+		err = checkLife.setArg(0, *life);
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
+		err = checkLife.setArg(1, *buffer);
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
+		err = checkLife.setArg(2, m_sizeY);
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
+		err = checkLife.setArg(3, m_sizeX);
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 		// launch add kernel
 		err = queue.enqueueNDRangeKernel(checkLife, cl::NullRange, global, local);
-		Global::CheckClError(err, __FILE__, __LINE__);
+		OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 		cl::Buffer* tmp = life;
 		life = buffer;
@@ -193,7 +175,7 @@ void GameOfLife::SimulateOpenCL(int generations) const
 
 	// read back result
 	err = queue.enqueueReadBuffer(*life, CL_TRUE, 0, m_sizeX * m_sizeY * sizeof(Life), m_life);
-	Global::CheckClError(err, __FILE__, __LINE__);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 }
 
 void GameOfLife::CheckLine(int ym1, int y, int yp1) const

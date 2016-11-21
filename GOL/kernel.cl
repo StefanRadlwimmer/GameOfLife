@@ -8,6 +8,7 @@ __kernel void CheckLife(
 	int y = get_global_id(0);
 	int x = get_global_id(1);
 
+	//Rounding up globalRange to 2^n --> need to check for overflow
 	if (y >= sizeY || x >= sizeX)
 		return;
 
