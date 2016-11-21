@@ -154,7 +154,8 @@ void GameOfLife::SetupOpenCL()
 	cl_int err = CL_SUCCESS;
 
 	m_device = OpenCLHelper::GetDevice(m_platformId, m_deviceId);
-	cl::Context context(m_device);
+	cl::Context context(m_device, 0, 0, 0, &err);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 	// load and build the kernel
 	std::ifstream sourceFile(KERNEL_FILE);
@@ -165,17 +166,18 @@ void GameOfLife::SetupOpenCL()
 	}
 	std::string sourceCode(std::istreambuf_iterator<char>(sourceFile), (std::istreambuf_iterator<char>()));
 	cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
-	cl::Program program = cl::Program(context, source);
+	cl::Program program = cl::Program(context, source, &err);
+	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
-	std::vector<cl::Device> devices { m_device };
+	std::vector<cl::Device> devices{ m_device };
 #ifdef __CL_ENABLE_EXCEPTIONS
 	try
 	{
 		err = program.build(devices);
 	}
 	catch (cl::Error error) {
-	// error handling
-	// if the kernel has failed to compile, print the error log
+		// error handling
+		// if the kernel has failed to compile, print the error log
 		std::string s;
 		program.getBuildInfo(m_device, CL_PROGRAM_BUILD_LOG, &s);
 		std::cout << s << std::endl;
