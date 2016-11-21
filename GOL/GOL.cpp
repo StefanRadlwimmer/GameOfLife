@@ -62,7 +62,15 @@ int main(int argc, char* argv[])
 			"--generations NUM (where NUM is a number)." << std::endl <<
 			"--save NAME (where NAME is a filename with the extension '.gol')" << std::endl <<
 			"--measure (generates measurement output on stdout)" << std::endl <<
-			"--mode [seq|omp|ocl] (Mode of computation)";
+			"--time (generates timing output on stdout)" << std::endl <<
+			"--mode [seq|omp|ocl] (Mode of computation)" << std::endl <<
+			"//Options for --mode omp" << std::endl <<
+			"--threads NUM (Sets max number of threads)" << std::endl <<
+			"//Options for --mode ocl" << std::endl <<
+			"--device [cpu|gpu] (automatically selects platform & device)" << std::endl <<
+			"--platformId NUM (user-dened selection of platform)" << std::endl <<
+			"--deviceId NUM (user-defined selection of device on platform)";
+		std::cin.ignore();
 		return 1;
 	}
 
