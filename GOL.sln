@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GOL", "GOL\GOL.vcxproj", "{995D6F86-CCF0-4833-A7D0-F998197017CE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenCL", "OpenCL\OpenCL.vcxproj", "{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{995D6F86-CCF0-4833-A7D0-F998197017CE}.Release|x64.Build.0 = Release|x64
 		{995D6F86-CCF0-4833-A7D0-F998197017CE}.Release|x86.ActiveCfg = Release|Win32
 		{995D6F86-CCF0-4833-A7D0-F998197017CE}.Release|x86.Build.0 = Release|Win32
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Debug|x64.ActiveCfg = Debug|x64
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Debug|x64.Build.0 = Debug|x64
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Debug|x86.ActiveCfg = Debug|Win32
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Debug|x86.Build.0 = Debug|Win32
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Release|x64.ActiveCfg = Release|x64
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Release|x64.Build.0 = Release|x64
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Release|x86.ActiveCfg = Release|Win32
+		{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,9 +1,10 @@
 #include "GameOfLife.h"
-#include <cstring>
 #include <iostream>
+#include <fstream>
 
-GameOfLife::GameOfLife(Life* life, int sizeX, int sizeY) : m_sizeY(sizeY), m_sizeX(sizeX), m_life(life), m_buffer(new Life[sizeY * sizeX])
-{}
+GameOfLife::GameOfLife(Life* life, int sizeX, int sizeY) : m_sizeY(sizeY), m_sizeX(sizeX), m_life(life), m_buffer(new Life[sizeY * sizeX]), m_platformId(-1), m_deviceId(-1)
+{
+}
 
 GameOfLife::~GameOfLife()
 {
@@ -11,15 +12,205 @@ GameOfLife::~GameOfLife()
 	delete[] m_buffer;
 }
 
-Life* GameOfLife::Simulate(int generations, char* mode)
+Life* GameOfLife::Simulate(int generations, Mode mode)
 {
-	for (int g = 0; g < generations; g++)
+	switch (mode)
 	{
-		Simulate(mode);
-		SwapBuffers();
+	case OpenCL:
+		SimulateOpenCL(generations);
+		break;
+	case OpenMP:
+		SimulateOpenMP(generations);
+		break;
+	default:
+		SimulateSeq(generations);
+		break;
 	}
 
 	return m_life;
+}
+
+void GameOfLife::SetCLSettings(int platformId, int deviceId)
+{
+	m_platformId = platformId;
+	m_deviceId = deviceId;
+}
+
+void GameOfLife::SimulateSeq(int generations)
+{
+	for (int g = 0; g < generations; ++g)
+	{
+		int lastLine = m_sizeY - 1;
+
+		CheckLine(lastLine, 0, 1);
+
+		for (int y = 1; y < lastLine; ++y)
+		{
+			CheckLine(y - 1, y, y + 1);
+		}
+
+		CheckLine(lastLine - 1, lastLine, 0);
+
+		SwapBuffers();
+	}
+}
+
+void GameOfLife::SimulateOpenMP(int generations)
+{
+	for (int g = 0; g < generations; ++g)
+	{
+		int lastLine = m_sizeY - 1;
+
+#pragma omp parallel 
+		{
+#pragma omp single
+			CheckLine(lastLine, 0, 1);
+
+# pragma omp for nowait
+			for (int y = 1; y < lastLine; ++y)
+			{
+				CheckLine(y - 1, y, y + 1);
+			}
+
+#pragma omp single
+			CheckLine(lastLine - 1, lastLine, 0);
+		}
+
+		SwapBuffers();
+	}
+}
+
+void GameOfLife::SimulateOpenCL(int generations) const
+{
+	const std::string KERNEL_FILE = "kernel.cl";
+	cl_int err = CL_SUCCESS;
+
+	// get available platforms ( NVIDIA, Intel, AMD,...)
+	std::vector<cl::Platform> platforms;
+	err = cl::Platform::get(&platforms);
+	Global::CheckClError(err, __FILE__, __LINE__);
+	if (platforms.size() == 0) {
+		std::cout << "No OpenCL platforms available!\n";
+		exit(-1);
+	}
+
+	// create a context and get available devices
+	cl::Platform platform = platforms[m_platformId]; // on a different machine, you may have to select a different platform
+
+	// get available devices
+	std::vector<cl::Device> devices;
+	platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+	Global::CheckClError(err, __FILE__, __LINE__);
+	if (devices.size() == 0) {
+		std::cout << "No OpenCL platforms available!\n";
+		exit(-1);
+	}
+
+	cl::Device device = devices[m_deviceId];
+
+	cl::Context context(device);
+
+	// load and build the kernel
+	std::ifstream sourceFile(KERNEL_FILE);
+	if (!sourceFile)
+	{
+		std::cout << "kernel source file " << KERNEL_FILE << " not found!" << std::endl;
+		exit(-1);
+	}
+	std::string sourceCode(std::istreambuf_iterator<char>(sourceFile), (std::istreambuf_iterator<char>()));
+	cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
+	cl::Program program = cl::Program(context, source);
+#ifdef __CL_ENABLE_EXCEPTIONS
+	try
+	{
+		err = program.build(devices);
+	}
+	catch (cl::Error error) {
+		// error handling
+		// if the kernel has failed to compile, print the error log
+		std::string s;
+		program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, &s);
+		std::cout << s << std::endl;
+		program.getBuildInfo(device, CL_PROGRAM_BUILD_OPTIONS, &s);
+		std::cout << s << std::endl;
+
+		std::cerr
+			<< "ERROR: "
+			<< error.what()
+			<< "("
+			<< error.err()
+			<< ")"
+			<< std::endl;
+	}
+#else
+	err = program.build(devices);
+#endif
+	cl::CommandQueue queue(context, 0, &err);
+	Global::CheckClError(err, __FILE__, __LINE__);
+	//cl::CommandQueue queue(context, device, 0, &err);
+
+	// input buffers
+	cl::Buffer* life = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
+	Global::CheckClError(err, __FILE__, __LINE__);
+	// output buffers
+	cl::Buffer* buffer = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
+	Global::CheckClError(err, __FILE__, __LINE__);
+
+	// fill buffers
+	err = queue.enqueueWriteBuffer(
+		*life, // which buffer to write to
+		CL_TRUE, // block until command is complete
+		0, // offset
+		m_sizeX * m_sizeY * sizeof(Life), // size of write 
+		m_life); // pointer to input
+	Global::CheckClError(err, __FILE__, __LINE__);
+
+	size_t maxWorkGroupSize = 0;
+	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
+
+	//create kernels
+	cl::Kernel checkLife(program, "CheckLife", &err);
+	for (int g = 0; g < generations; ++g)
+	{
+		checkLife.setArg(0, *life);
+		checkLife.setArg(1, *buffer);
+		checkLife.setArg(2, m_sizeY);
+		checkLife.setArg(3, m_sizeX);
+
+		// launch add kernel
+		// Run the kernel on specific ND range
+		cl::NDRange global(m_sizeY, m_sizeX);
+		cl::NDRange local(10, 10); //make sure local range is divisible by global range
+		cl::NDRange offset(0, 0);
+		err = queue.enqueueNDRangeKernel(checkLife, offset, global, local);
+		Global::CheckClError(err, __FILE__, __LINE__);
+
+		cl::Buffer* tmp = life;
+		life = buffer;
+		buffer = tmp;
+	}
+
+	// read back result
+	err = queue.enqueueReadBuffer(*life, CL_TRUE, 0, m_sizeX * m_sizeY * sizeof(Life), m_life);
+	Global::CheckClError(err, __FILE__, __LINE__);
+}
+
+void GameOfLife::CheckLine(int ym1, int y, int yp1) const
+{
+	ym1 *= m_sizeX;
+	y *= m_sizeX;
+	yp1 *= m_sizeX;
+
+	int lastField = m_sizeX - 1;
+
+	CheckField(ym1, y, yp1, lastField, 0, 1);
+
+	for (int x = 1; x < lastField; ++x)
+	{
+		CheckField(ym1, y, yp1, x - 1, x, x + 1);
+	}
+
+	CheckField(ym1, y, yp1, lastField - 1, lastField, 0);
 }
 
 void GameOfLife::CheckField(int ym1Offset, int yOffset, int yp1Offset, int xm1, int x, int xp1) const
@@ -50,59 +241,6 @@ void GameOfLife::CheckField(int ym1Offset, int yOffset, int yp1Offset, int xm1, 
 		++count;
 
 	m_buffer[yOffset + x] = (count == 2 && m_life[yOffset + x]) || count == 3;
-}
-
-void GameOfLife::CheckLine(int y) const
-{
-	int ym1Offset, yOffset, yp1Offset, xm1, xp1;
-	if (y == 0)
-		ym1Offset = (m_sizeY - 1) * m_sizeX;
-	else
-		ym1Offset = (y - 1) * m_sizeX;
-
-	yOffset = y * m_sizeX;
-
-	if (y == m_sizeY - 1)
-		yp1Offset = 0;
-	else
-		yp1Offset = (y + 1)  * m_sizeX;
-
-	for (int x = 0; x < m_sizeX; ++x)
-	{
-		if (x == 0)
-			xm1 = m_sizeX - 1;
-		else
-			xm1 = x - 1;
-
-		if (x == m_sizeX - 1)
-			xp1 = 0;
-		else
-			xp1 = x + 1;
-
-		CheckField(ym1Offset, yOffset, yp1Offset, xm1, x, xp1);
-	}
-}
-
-void GameOfLife::Simulate(char* mode) const
-{
-	if (strcmp(mode, "seq") == 0)
-		for (int y = 0; y < m_sizeY; ++y)
-		{
-			CheckLine(y);
-		}
-	else if (strcmp(mode, "omp") == 0)
-#pragma omp parallel for
-		for (int y = 0; y < m_sizeY; ++y)
-		{
-			CheckLine(y);
-		}
-	else if (strcmp(mode, "omp") == 0)
-		for (int y = 0; y < m_sizeY; ++y)
-		{
-			CheckLine(y);
-		}
-	else
-		std::cout << "Error: mode not valid: " << mode << std::endl;
 }
 
 void GameOfLife::SwapBuffers()

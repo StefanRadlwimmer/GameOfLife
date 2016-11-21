@@ -27,19 +27,30 @@
     <ClCompile Include="GameOfLife.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCLHelper.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Modulo.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Life.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="FileIO.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="GameOfLife.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="OpenCLHelper.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernel.cl">
+      <Filter>Ressourcendateien</Filter>
+    </None>
   </ItemGroup>
 </Project>

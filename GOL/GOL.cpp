@@ -1,6 +1,6 @@
 // GOL.cpp : Definiert den Einstiegspunkt für die Konsolenanwendung.
 //
-
+#include <omp.h>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
@@ -8,6 +8,7 @@
 #include <chrono>
 #include "FileIO.h"
 #include "GameOfLife.h"
+#include "OpenCLHelper.h"
 
 namespace cr = std::chrono;
 typedef cr::high_resolution_clock golClock;
@@ -15,9 +16,10 @@ void WriteDuration(const cr::steady_clock::time_point& start, const cr::steady_c
 
 int main(int argc, char* argv[])
 {
-	char* inFile = nullptr, *outFile = nullptr, *mode = "seq";
-	int generations = 0;
+	char* inFile = nullptr, *outFile = nullptr, *modeString = "seq", *deviceString = "gpu";
+	int generations = 0, numTreads = -1, platformId = -1, deviceId = -1;
 	bool measure = false;
+	DeviceType device;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -34,7 +36,19 @@ int main(int argc, char* argv[])
 			measure = true;
 
 		if (strcmp(argv[i], "--mode") == 0)
-			mode = argv[++i];
+			modeString = argv[++i];
+
+		if (strcmp(argv[i], "--threads") == 0)
+			numTreads = atoi(argv[++i]);
+
+		if (strcmp(argv[i], "--device") == 0)
+			deviceString = argv[++i];
+
+		if (strcmp(argv[i], "--platformId") == 0)
+			platformId = atoi(argv[++i]);
+
+		if (strcmp(argv[i], "--deviceId") == 0)
+			deviceId = atoi(argv[++i]);
 	}
 
 	if (inFile == nullptr)
@@ -45,15 +59,39 @@ int main(int argc, char* argv[])
 			"--save NAME (where NAME is a filename with the extension '.gol')" << std::endl <<
 			"--measure (generates measurement output on stdout)" << std::endl <<
 			"--mode [seq|omp|ocl] (Mode of computation)";
-		return -1;
+		return 1;
 	}
 
 	int sizeX, sizeY;
 	auto start_time = golClock::now();
 	auto life = FileIO::Load(inFile, sizeX, sizeY);
 	auto gol = new GameOfLife(life, sizeX, sizeY);
+
+	Mode mode = Global::ParseMode(modeString);
+
+	if (mode == OpenMP && numTreads != -1)
+		omp_set_num_threads(numTreads);
+	if (mode == OpenCL)
+	{
+		device = Global::ParseDevice(deviceString);
+
+		if (platformId == -1 || deviceId == -1)
+			OpenCLHelper::GetOpenCLSettings(device, platformId, deviceId);
+
+		gol->SetCLSettings(platformId, deviceId);
+	}
+	
 	if (measure)
 		WriteDuration(start_time, golClock::now());
+
+	if (sizeX == 0 && sizeY == 0)
+	{
+		std::cerr << "Input-File not found!";
+#ifdef _DEBUG
+		std::cin.ignore();
+#endif
+		return -1;
+	}
 
 	start_time = golClock::now();
 	life = gol->Simulate(generations, mode);
@@ -93,3 +131,4 @@ void WriteDuration(const cr::steady_clock::time_point& start, const cr::steady_c
 		<< std::setw(2) << secs.count() << '.'
 		<< std::setw(3) << millis.count() << "; ";
 }
+
