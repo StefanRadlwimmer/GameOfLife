@@ -3,7 +3,7 @@
 #include <fstream>
 #include "OpenCLHelper.h"
 
-GameOfLife::GameOfLife(Life* life, int sizeX, int sizeY) : m_sizeY(sizeY), m_sizeX(sizeX), m_life(life), m_buffer(new Life[sizeY * sizeX]), m_platformId(-1), m_deviceId(-1)
+GameOfLife::GameOfLife(Life* life, int sizeX, int sizeY) : m_sizeY(sizeY), m_sizeX(sizeX), m_life(life), m_buffer(new Life[sizeY * sizeX]), m_clLife(nullptr), m_clBuffer(nullptr), m_platformId(-1), m_deviceId(-1)
 {
 }
 
@@ -11,6 +11,8 @@ GameOfLife::~GameOfLife()
 {
 	delete[] m_life;
 	delete[] m_buffer;
+	delete m_clLife;
+	delete m_clBuffer;
 }
 
 Life* GameOfLife::Simulate(int generations, Mode mode)
@@ -112,9 +114,9 @@ void GameOfLife::SetupOpenCL()
 	// error handling
 	// if the kernel has failed to compile, print the error log
 		std::string s;
-		program.getBuildInfo(device, CL_PROGRAM_BUILD_LOG, &s);
+		program.getBuildInfo(m_device, CL_PROGRAM_BUILD_LOG, &s);
 		std::cout << s << std::endl;
-		program.getBuildInfo(device, CL_PROGRAM_BUILD_OPTIONS, &s);
+		program.getBuildInfo(m_device, CL_PROGRAM_BUILD_OPTIONS, &s);
 		std::cout << s << std::endl;
 
 		std::cerr << "ERROR: " << error.what() << "(" << error.err() << ")" << std::endl;
