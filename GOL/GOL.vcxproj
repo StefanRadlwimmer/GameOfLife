@@ -111,6 +111,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)$(ProjectName)\OpenCL\*" "$(SolutionDir)$(Platform)\$(Configuration)\"
+xcopy /Y "$(SolutionDir)$(ProjectName)\Batch\*" "$(SolutionDir)$(Platform)\$(Configuration)\"
 xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -153,6 +154,7 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)$(ProjectName)\OpenCL\*" "$(SolutionDir)$(Platform)\$(Configuration)\"
+xcopy /Y "$(SolutionDir)$(ProjectName)\Batch\*" "$(SolutionDir)$(Platform)\$(Configuration)\"
 xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(Configuration)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
