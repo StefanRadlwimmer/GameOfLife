@@ -48,6 +48,10 @@ void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2
 	size_t maxWorkGroupSize = 0;
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 	CheckClError(err, __FILE__, __LINE__);
+	
+	//I have no idea why, but this is faster
+	size_t magicFactor = 4ULL;
+	maxWorkGroupSize /= magicFactor;
 
 	size_t workDistribution = std::max(1ULL, maxWorkGroupSize / dim2Binary);
 
