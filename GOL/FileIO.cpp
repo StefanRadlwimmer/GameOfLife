@@ -43,10 +43,11 @@ void FileIO::Save(char* out_file, Life* life, int sizeX, int sizeY)
 		for (int x = 0; x < sizeX; ++x)
 		{
 			if (life[yOffset + x])
-				outfile << 'x';
+				life[yOffset + x] = 'x';
 			else
-				outfile << '.';
+				life[yOffset + x] = '.';
 		}
+		outfile.write(&life[yOffset], sizeX);
 		outfile << std::endl;
 	}
 }
