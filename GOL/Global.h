@@ -2,7 +2,6 @@
 #ifdef _DEBUG
 #define __CL_ENABLE_EXCEPTIONS
 #endif
-#include <CL/cl.h>
 
 enum DeviceType
 {

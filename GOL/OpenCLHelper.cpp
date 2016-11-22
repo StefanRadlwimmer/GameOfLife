@@ -39,21 +39,21 @@ void OpenCLHelper::GetOpenCLSettings(DeviceType deviceType, int& out_platformId,
 
 void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2, cl::NDRange& out_local, cl::NDRange& out_global)
 {
-	int dim1Binary = pow(2, ceil(log(dim1) / log(2)));
-	int dim2Binary = pow(2, ceil(log(dim2) / log(2)));
+	dim1 = pow(2, ceil(log(dim1) / log(2)));
+	dim2 = pow(2, ceil(log(dim2) / log(2)));
 
-	out_global = cl::NDRange(dim1Binary, dim2Binary);
+	out_global = cl::NDRange(dim1, dim2);
 
 	cl_int err = CL_SUCCESS;
 	size_t maxWorkGroupSize = 0;
 	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 	CheckClError(err, __FILE__, __LINE__);
-	
+
 	//I have no idea why, but this is faster
 	size_t magicFactor = 4ULL;
 	maxWorkGroupSize /= magicFactor;
 
-	size_t workDistribution = std::max(1ULL, maxWorkGroupSize / dim2Binary);
+	size_t workDistribution = std::max(1ULL, maxWorkGroupSize / dim2);
 
 	out_local = cl::NDRange(workDistribution, maxWorkGroupSize / workDistribution);
 }
