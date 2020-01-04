@@ -39,7 +39,6 @@ void OpenCLHelper::GetOpenCLSettings(DeviceType deviceType, int& out_platformId,
 
 void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2, cl::NDRange& out_local, cl::NDRange& out_global)
 {
-	dim1 = pow(2, ceil(log(dim1) / log(2)));
 	dim2 = pow(2, ceil(log(dim2) / log(2)));
 
 	out_global = cl::NDRange(dim1, dim2);
@@ -51,11 +50,7 @@ void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2
 
 	//I have no idea why, but this is faster
 	size_t magicFactor = 4ULL;
-	maxWorkGroupSize /= magicFactor;
-
-	size_t workDistribution = std::max(1ULL, maxWorkGroupSize / dim2);
-
-	out_local = cl::NDRange(workDistribution, maxWorkGroupSize / workDistribution);
+	out_local = cl::NDRange(1, std::min(dim2 * 1ULL, maxWorkGroupSize / magicFactor));
 }
 
 cl::Device OpenCLHelper::GetDevice(int platformId, int deviceId)

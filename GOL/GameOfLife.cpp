@@ -64,7 +64,7 @@ void GameOfLife::SimulateOpenMP(int generations)
 
 #pragma omp parallel 
 		{
-#pragma omp single
+#pragma omp single nowait
 			CheckLine(lastLine, 0, 1);
 
 # pragma omp for nowait
@@ -73,7 +73,7 @@ void GameOfLife::SimulateOpenMP(int generations)
 				CheckLine(y - 1, y, y + 1);
 			}
 
-#pragma omp single
+#pragma omp single nowait
 			CheckLine(lastLine - 1, lastLine, 0);
 		}
 
@@ -196,20 +196,20 @@ void GameOfLife::SetupOpenCL()
 	//cl::CommandQueue queue(context, device, 0, &err);
 
 	// input buffers
-	m_clLife = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
+	m_clLife = new cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, m_sizeX * m_sizeY * sizeof(Life), m_life, &err);
 	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 	// output buffers
 	m_clBuffer = new cl::Buffer(context, CL_MEM_READ_WRITE, m_sizeX * m_sizeY * sizeof(Life), 0, &err);
 	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 	// fill buffers
-	err = m_queue.enqueueWriteBuffer(
-		*m_clLife, // which buffer to write to
-		CL_TRUE, // block until command is complete
-		0, // offset
-		m_sizeX * m_sizeY * sizeof(Life), // size of write 
-		m_life); // pointer to input
-	OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
+	//err = m_queue.enqueueWriteBuffer(
+	//	*m_clLife, // which buffer to write to
+	//	CL_TRUE, // block until command is complete
+	//	0, // offset
+	//	m_sizeX * m_sizeY * sizeof(Life), // size of write 
+	//	m_life); // pointer to input
+	//OpenCLHelper::CheckClError(err, __FILE__, __LINE__);
 
 	//create kernels
 	m_kernel = cl::Kernel(program, "CheckLife", &err);

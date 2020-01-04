@@ -37,17 +37,19 @@ void FileIO::Save(char* out_file, Life* life, int sizeX, int sizeY)
 {
 	std::ofstream outfile(out_file);
 	outfile << sizeX << "," << sizeY << std::endl;
+	char* outBuffer = new char[sizeX];
 	for (int y = 0; y < sizeY; ++y)
 	{
 		int yOffset = y * sizeX;
 		for (int x = 0; x < sizeX; ++x)
 		{
 			if (life[yOffset + x])
-				life[yOffset + x] = 'x';
+				outBuffer[x] = 'x';
 			else
-				life[yOffset + x] = '.';
+				outBuffer[x] = '.';
 		}
-		outfile.write(&life[yOffset], sizeX);
+		outfile.write(outBuffer, sizeX);
 		outfile << std::endl;
 	}
+	delete[] outBuffer;
 }
