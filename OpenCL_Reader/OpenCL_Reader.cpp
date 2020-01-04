@@ -1,6 +1,6 @@
 // Author: Markus Schordan, 2011.
 
-#include "CL/cl.h"
+#include <CL/cl.h>
 #include <malloc.h>
 #include <iostream>
 #include <string>

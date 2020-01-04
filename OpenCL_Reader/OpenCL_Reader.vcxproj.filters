@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="myclinfo.cpp">
+    <ClCompile Include="OpenCL_Reader.cpp">
       <Filter>Ressourcendateien</Filter>
     </ClCompile>
   </ItemGroup>

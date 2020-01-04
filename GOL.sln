@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GOL", "GOL\GOL.vcxproj", "{995D6F86-CCF0-4833-A7D0-F998197017CE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenCL", "OpenCL\OpenCL.vcxproj", "{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenCL_Reader", "OpenCL_Reader\OpenCL_Reader.vcxproj", "{AF4EB5C3-3BED-47ED-A48E-A4CB6DCE0376}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
