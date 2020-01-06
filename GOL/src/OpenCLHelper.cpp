@@ -3,62 +3,85 @@
 #include <CL/cl.hpp>
 #include <algorithm>
 
-void OpenCLHelper::GetOpenCLSettings(DeviceType deviceType, int& out_platformId, int& out_deviceId)
+cl::DeviceType OpenCLHelper::ParseDevice(char* device)
 {
-	cl_int err;
+	if (device == nullptr)
+		return cl::GPU;
 
+	if (strcmp(device, "cpu") == 0)
+		return cl::CPU;
+	if (strcmp(device, "gpu") == 0)
+		return cl::GPU;
+	if (strcmp(device, "any") == 0)
+		return cl::All;
+
+	std::cout << "Unknown Device: " << device << std::endl;
+	return cl::All;
+}
+
+char* OpenCLHelper::ParseDevice(cl::DeviceType device)
+{
+	switch (device)
+	{
+	case cl::GPU:
+		return "GPU";
+	case cl::CPU:
+		return "CPU";
+	case cl::All:
+	default:
+		return "ANY";
+	}
+}
+
+cl::Device OpenCLHelper::GetDevice(cl::DeviceType deviceType)
+{
 	std::vector<cl::Platform> platforms;
-	err = cl::Platform::get(&platforms);
+	cl_int err = cl::Platform::get(&platforms);
 	CheckClError(err, __FILE__, __LINE__);
 
-	for (out_platformId = 0; out_platformId < platforms.size(); ++out_platformId)
+	for (size_t platformId = 0; platformId < platforms.size(); ++platformId)
 	{
-		cl::Platform& platform = platforms[out_platformId];
+		cl::Platform& platform = platforms[platformId];
 
 		std::vector<cl::Device> devices;
 		err = platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 		CheckClError(err, __FILE__, __LINE__);
-		for (out_deviceId = 0; out_deviceId < devices.size(); ++out_deviceId)
+		for (size_t deviceId = 0; deviceId < devices.size(); ++deviceId)
 		{
-			cl::Device& device = devices[out_deviceId];
+			cl::Device& device = devices[deviceId];
 
 			cl_device_type type = 0;
 			err = device.getInfo(CL_DEVICE_TYPE, &type);
 			CheckClError(err, __FILE__, __LINE__);
 
-			if ((type == CL_DEVICE_TYPE_GPU && deviceType == GPU)
-				|| (type == CL_DEVICE_TYPE_CPU && deviceType == CPU))
-			{
-				return;
-			}
+			if (type == deviceType)
+				return device;
 		}
 	}
 
-	std::cout << "No device for type: " << Global::ParseDevice(deviceType) << " available!" << std::endl;
+	std::cout << "No device for type: " << ParseDevice(deviceType) << " available!" << std::endl;
+	return cl::Device::getDefault();
 }
 
-void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int dim1, int dim2, cl::NDRange& out_local, cl::NDRange& out_global)
+void OpenCLHelper::DetermineBestWorkGroups(cl::Device device, int sizeY, int sizeX, cl::NDRange& out_global, cl::NDRange& out_local)
 {
-	dim2 = pow(2, ceil(log(dim2) / log(2)));
+	sizeX = std::pow(2, std::ceil(std::log(sizeX) / std::log(2)));
 
-	out_global = cl::NDRange(dim1, dim2);
+	out_global = cl::NDRange(sizeY, sizeX);
 
-	cl_int err = CL_SUCCESS;
 	size_t maxWorkGroupSize = 0;
-	err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
+	cl_int err = device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize);
 	CheckClError(err, __FILE__, __LINE__);
 
 	//I have no idea why, but this is faster
-	size_t magicFactor = 4ULL;
-	out_local = cl::NDRange(1, std::min(dim2 * 1ULL, maxWorkGroupSize / magicFactor));
+	constexpr size_t magicFactor = 4ULL;
+	out_local = cl::NDRange(1, std::min(sizeX * 1ULL, maxWorkGroupSize / magicFactor));
 }
 
 cl::Device OpenCLHelper::GetDevice(int platformId, int deviceId)
 {
-	cl_int err = CL_SUCCESS;
-
 	std::vector<cl::Platform> platforms;
-	err = cl::Platform::get(&platforms);
+	cl_int err = cl::Platform::get(&platforms);
 	CheckClError(err, __FILE__, __LINE__);
 	if (platforms.size() == 0)
 	{

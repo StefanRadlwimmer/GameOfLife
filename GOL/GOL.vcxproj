@@ -96,7 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,7 +156,7 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OpenMPSupport>true</OpenMPSupport>
-      <AdditionalIncludeDirectories>$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;$(CUDA_PATH)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -173,23 +173,29 @@ xcopy /Y "$(SolutionDir)$(ProjectName)\kernel.cl" "$(SolutionDir)$(Platform)\$(C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FileIO.cpp" />
-    <ClCompile Include="GameOfLife.cpp" />
-    <ClCompile Include="Global.cpp" />
-    <ClCompile Include="GOL.cpp" />
-    <ClCompile Include="OpenCLHelper.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="FileIO.h" />
-    <ClInclude Include="GameOfLife.h" />
-    <ClInclude Include="Global.h" />
-    <ClInclude Include="OpenCLHelper.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Batch\_Benchmark.bat" />
     <None Include="Batch\_Test_All.bat" />
     <None Include="Batch\_Time_All.bat" />
     <None Include="kernel.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\FileIO.h" />
+    <ClInclude Include="src\GameOfLife\GameOfLifeOpenMP.h" />
+    <ClInclude Include="src\GameOfLife\GameOfLifeOpenCL.h" />
+    <ClInclude Include="src\GameOfLife\GameOfLifeSeq.h" />
+    <ClInclude Include="src\GameOfLife\GameOfLifeBase.h" />
+    <ClInclude Include="src\Global.h" />
+    <ClInclude Include="src\OpenCLHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\FileIO.cpp" />
+    <ClCompile Include="src\GameOfLife\GameOfLifeBase.cpp" />
+    <ClCompile Include="src\GameOfLife\GameOfLifeOpenMP.cpp" />
+    <ClCompile Include="src\GameOfLife\GameOfLifeOpenCL.cpp" />
+    <ClCompile Include="src\GameOfLife\GameOfLifeSeq.cpp" />
+    <ClCompile Include="src\Global.cpp" />
+    <ClCompile Include="src\GOL.cpp" />
+    <ClCompile Include="src\OpenCLHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

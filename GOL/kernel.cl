@@ -1,4 +1,4 @@
-__kernel void CheckLife(
+__kernel void SimulateCell(
 	__global const char* life,
 	__global char* buffer,
 	const int sizeY,
@@ -12,53 +12,18 @@ __kernel void CheckLife(
 	if (y >= sizeY || x >= sizeX)
 		return;
 
-	int ym1Offset, yOffset, yp1Offset, xm1, xp1;
+	const int yOffset = y * sizeX;
 
-	yOffset = y * sizeX;
-	if (y == 0)
-		ym1Offset = (sizeY - 1) * sizeX;
-	else
-		ym1Offset = yOffset - sizeX;
+	const int ym1Offset = (y == 0) ? (sizeY - 1) * sizeX : yOffset - sizeX;
+	const int yp1Offset = (y == sizeY - 1) ? 0 : yOffset + sizeX;
 
-	if (y == sizeY - 1)
-		yp1Offset = 0;
-	else
-		yp1Offset = yOffset + sizeX;
+	const int xm1 = (x == 0) ? sizeX - 1 : x - 1;
+	const int xp1 = (x == sizeX - 1) ? 0 : x + 1;
+	
+	const int count =
+		  life[ym1Offset + xm1] + life[ym1Offset + x] + life[ym1Offset + xp1]
+		+ life[yOffset   + xm1]						  + life[yOffset   + xp1]
+		+ life[yp1Offset + xm1] + life[yp1Offset + x] + life[yp1Offset + xp1];
 
-	if (x == 0)
-		xm1 = sizeX - 1;
-	else
-		xm1 = x - 1;
-
-	if (x == sizeX - 1)
-		xp1 = 0;
-	else
-		xp1 = x + 1;
-
-	int count = 0;
-	if (life[ym1Offset + xm1])
-		++count;
-
-	if (life[ym1Offset + x])
-		++count;
-
-	if (life[ym1Offset + xp1])
-		++count;
-
-	if (life[yOffset + xm1])
-		++count;
-
-	if (life[yOffset + xp1])
-		++count;
-
-	if (life[yp1Offset + xm1])
-		++count;
-
-	if (life[yp1Offset + x])
-		++count;
-
-	if (life[yp1Offset + xp1])
-		++count;
-
-	buffer[yOffset + x] = (count == 2 && life[yOffset + x]) || count == 3;
+	buffer[yOffset + x] = ((count == 2 && life[yOffset + x]) || count == 3) ? 1 : 0;
 }

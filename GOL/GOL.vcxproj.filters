@@ -9,49 +9,20 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Ressourcendateien">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Scripts">
       <UniqueIdentifier>{850e340b-e313-4bd3-b822-b69fcde648f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Quelldateien\GameOfLife">
+      <UniqueIdentifier>{21210697-e47c-4405-a902-2185a5c69991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\GameOfLife">
+      <UniqueIdentifier>{c973dc9c-3888-4c8e-b880-693c827aca6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Kernel">
+      <UniqueIdentifier>{1c3ec0cc-f03c-4aa5-99e4-f5eb7cafd72f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GOL.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIO.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="GameOfLife.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCLHelper.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="Global.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="FileIO.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="GameOfLife.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="OpenCLHelper.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Global.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="kernel.cl">
-      <Filter>Ressourcendateien</Filter>
-    </None>
     <None Include="Batch\_Benchmark.bat">
       <Filter>Scripts</Filter>
     </None>
@@ -61,5 +32,57 @@
     <None Include="Batch\_Time_All.bat">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="kernel.cl">
+      <Filter>Kernel</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Global.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OpenCLHelper.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FileIO.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameOfLife\GameOfLifeOpenCL.h">
+      <Filter>Headerdateien\GameOfLife</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameOfLife\GameOfLifeSeq.h">
+      <Filter>Headerdateien\GameOfLife</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameOfLife\GameOfLifeBase.h">
+      <Filter>Headerdateien\GameOfLife</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameOfLife\GameOfLifeOpenMP.h">
+      <Filter>Headerdateien\GameOfLife</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GOL.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenCLHelper.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileIO.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Global.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameOfLife\GameOfLifeOpenCL.cpp">
+      <Filter>Quelldateien\GameOfLife</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameOfLife\GameOfLifeSeq.cpp">
+      <Filter>Quelldateien\GameOfLife</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameOfLife\GameOfLifeBase.cpp">
+      <Filter>Quelldateien\GameOfLife</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameOfLife\GameOfLifeOpenMP.cpp">
+      <Filter>Quelldateien\GameOfLife</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
